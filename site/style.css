@@ -483,6 +483,8 @@ body.page-home {
     flex-direction: row;
     padding: 0 26px;
     min-height: 106px;
+    /* 点击舒展：0.6s，舒缓曲线 */
+    transition: min-height 0.6s cubic-bezier(0.33, 0, 0.18, 1), filter 0.5s ease;
   }
   .stripe:hover { flex-grow: 1; }
 
@@ -494,8 +496,9 @@ body.page-home {
   body.anim-in .stripe:nth-child(4) { animation-delay: 0.29s; }
   body.anim-in .stripe:nth-child(5) { animation-delay: 0.37s; }
 
-  /* 点击：被选中的色带舒展开再进入对应页面（对应桌面端的悬停展开） */
-  .stripe.is-opening { flex-grow: 2.4; filter: brightness(1.06); }
+  /* 点击：被选中的色带大幅长高、其余四条温和收窄（屏风展开的意象），随后进入对应页面 */
+  .stripes.opening .stripe { min-height: 58px; }
+  .stripes.opening .stripe.is-opening { min-height: 400px; filter: brightness(1.06); }
   .stripe:active { filter: brightness(1.06); }
 
   .st-label {

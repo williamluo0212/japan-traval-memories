@@ -19,10 +19,11 @@
       ev.preventDefault();
       if (leaving) return;
       leaving = true;
+      a.closest('.stripes').classList.add('opening');
       a.classList.add('is-opening');
       setTimeout(() => {
         location.href = a.href;
-      }, 320);
+      }, 640);
     });
   });
 })();
