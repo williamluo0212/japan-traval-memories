@@ -93,6 +93,7 @@ export function renderHome(byColor) {
 ${stripes}
     </nav>
   </main>
+  <script src="assets/home.js" defer></script>
 </body>
 </html>
 `;

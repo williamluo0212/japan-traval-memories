@@ -397,6 +397,11 @@ body.page-home {
   to { opacity: 1; }
 }
 
+@keyframes stripe-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lightbox[open] { animation: none; }
   .ph-link img, .color-nav a, .color-index a { transition: none; }
@@ -480,6 +485,19 @@ body.page-home {
     min-height: 106px;
   }
   .stripe:hover { flex-grow: 1; }
+
+  /* 入场：五条色带依次浮现（home.js 挂 anim-in，系统减弱动态效果时不挂） */
+  body.anim-in .stripe { animation: stripe-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+  body.anim-in .stripe:nth-child(1) { animation-delay: 0.05s; }
+  body.anim-in .stripe:nth-child(2) { animation-delay: 0.13s; }
+  body.anim-in .stripe:nth-child(3) { animation-delay: 0.21s; }
+  body.anim-in .stripe:nth-child(4) { animation-delay: 0.29s; }
+  body.anim-in .stripe:nth-child(5) { animation-delay: 0.37s; }
+
+  /* 点击：被选中的色带舒展开再进入对应页面（对应桌面端的悬停展开） */
+  .stripe.is-opening { flex-grow: 2.4; filter: brightness(1.06); }
+  .stripe:active { filter: brightness(1.06); }
+
   .st-label {
     writing-mode: horizontal-tb;
     display: flex;
