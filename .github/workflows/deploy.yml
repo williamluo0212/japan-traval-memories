@@ -50,3 +50,5 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4
+
+# 手动触发入口：仓库 Actions 页 → build-and-deploy → Run workflow
