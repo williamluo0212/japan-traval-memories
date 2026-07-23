@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/30295798/README.md)
 # 五色（ごしき）— 日本旅拍作品集网站
 
 按 红・蓝・黄・绿・灰 五种主色调分页展示照片的静态网站。
@@ -37,15 +36,17 @@ photos/gray/    → 鼠（灰）
 - **删除照片**：直接从 `photos/` 删掉文件即可，网站会同步移除。
 - **目前 `photos/` 里是一批示例照片**，可以整批删掉换成你自己的作品。
 
-## 以后想发布上线
+## 发布与更新（GitHub Pages 自动化）
 
-`dist/` 文件夹就是完整的网站（纯静态、自包含），把它拖到
-Vercel / Netlify，或推到 GitHub Pages 即可上线。
-发布前在终端运行一次：
+仓库推送到 main 分支后，GitHub Actions 会自动构建并发布到
+https://williamluo0212.github.io/japan-traval-memories/ 。
+日常更新照片：拖进 `photos/` → 本地预览满意后 `git add -A && git commit && git push`。
 
-```
-npm run build
-```
+## 访客投稿
+
+网站有「投稿」页，访客上传的照片会变成一个 Pull Request 发到你邮箱：
+合并 = 通过并自动发布（照片带「投稿」标注混入五色页），关闭 = 拒绝。
+首次启用需按 `docs/投稿功能配置指南.md` 配置（约 15 分钟）。
 
 ## 技术备忘（给未来的维护者）
 
@@ -53,5 +54,8 @@ npm run build
 - `npm run dev`：构建 + 本地服务器 + 监听 photos/ 自动重建刷新。
 - 昂贵产物（缩略图）缓存在 `.cache/`，`dist/` 可随时整删重建。
 - 颜色算法与全部阈值在 `scripts/lib/color.js` 顶部常量区。
-- HEIC 解码依赖 macOS 自带的 `sips`（sharp 预编译包不含 HEVC 解码）；
-  若未来改用 CI 构建需换 libheif 方案。
+- HEIC 解码：macOS 本地用系统 `sips`（快），CI 的 Linux 上自动切换为
+  `heic-decode`（纯 wasm）；`FORCE_HEIC_WASM=1` 可本地模拟 CI 行为。
+- 投稿链路：`workers/upload-worker.js`（Cloudflare Worker，校验+开 PR）、
+  `photos/submissions/`（投稿照片，自动归类+「投稿」标注）、
+  `upload.config.json`（Worker 地址与 Turnstile Site Key）。
