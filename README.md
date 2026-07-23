@@ -1,61 +1,69 @@
-# 五色（ごしき）— 日本旅拍作品集网站
+# 五色（ごしき）— 无尽夏
 
-按 红・蓝・黄・绿・灰 五种主色调分页展示照片的静态网站。
-照片自动按拍摄时间排序，点开大图可以看到拍摄参数（从 EXIF 读取）。
+[![build-and-deploy](https://github.com/williamluo0212/japan-traval-memories/actions/workflows/deploy.yml/badge.svg)](https://github.com/williamluo0212/japan-traval-memories/actions/workflows/deploy.yml)
 
-## 日常使用（就这两步）
+**🔗 线上网站：https://williamluo0212.github.io/japan-traval-memories/**
 
-1. **双击「启动网站.command」** —— 浏览器会自动打开网站。
-2. **把照片拖进 `photos/` 文件夹** —— 几秒后页面自动刷新，新照片出现在对应颜色的页面里。
+按 **茜（红）・藍（蓝）・山吹（黄）・松葉（绿）・鼠（灰）** 五种日本传统色分页展示的
+日本旅拍摄影作品集。日式极简设计，简体中文・日本語双语。
 
-就这么简单。颜色归类、时间排序、缩略图、拍摄参数，全部自动完成。
+## ✦ 特色
 
-## 照片被分错颜色了？
+- **五色分页**：每张照片按主色调自动归入五色之一（HSL 色相分析，饱和度加权）
+- **时间为序**：页面内按 EXIF 拍摄时间升序，瀑布流排版
+- **拍摄参数**：点开大图显示机身・镜头・焦距・光圈・快门・ISO・时间（构建期从 EXIF 提取）
+- **访客投稿**：任何访客可在「投稿」页上传照片，经站主审核后自动上线（带「投稿」标注）
+- **隐私**：发布的图片自动剥离全部 EXIF（含 GPS 位置信息）
+- **全自动流水线**：照片进仓库 → GitHub Actions 构建（缩略图、归色、页面生成）→ 发布 Pages
 
-把那张照片从 `photos/` 拖进对应颜色的子文件夹即可强制指定：
+## 站主日常操作
+
+| 想做的事 | 操作 |
+|---|---|
+| 加照片 | 把照片放进 `photos/`，提交推送（本地预览：双击「启动网站.command」）|
+| 删照片 | 从 `photos/` 删除后推送，或直接在 GitHub 网页上删（记得之后 `git pull` 同步）|
+| 纠正颜色归类 | 把照片拖进 `photos/red|blue|yellow|green|gray/` 强制指定 |
+| 批量检查归类 | `npm run report` → 打开 `dist/_debug/colors.html` |
+| 审核投稿 | 收到 PR 邮件 → Files changed 预览 → **Merge**=通过 / **Close**=拒绝 |
+
+## 访客投稿链路
 
 ```
-photos/red/     → 茜（红）
-photos/blue/    → 藍（蓝）
-photos/yellow/  → 山吹（黄）
-photos/green/   → 松葉（绿）
-photos/gray/    → 鼠（灰）
+访客上传（/upload 页）→ Turnstile 人机验证
+  → Cloudflare Worker（大小/文件头/来源校验）→ 自动开 Pull Request
+  → 站主审核合并 → Actions 自动构建发布
 ```
 
-想批量检查归类结果：在终端运行 `npm run report`，然后打开
-`dist/_debug/colors.html`，所有照片的归类结果一目了然。
+防护：20MB 上限、按文件头识别真实格式、来源域名检查、人机验证、可选每 IP 限频。
+任何照片都必须经站主合并才会上线。首次配置见 `docs/投稿功能配置指南.md`。
 
-## 需要知道的细节
+## 本地开发
 
-- **支持的格式**：JPEG、PNG、WebP、HEIC（iPhone 照片可直接拖入）。
-  RAW 文件（ARW/CR3/NEF 等）会被跳过并提示——请放入后期导出的 JPEG。
-- **隐私**：网站里的图片会自动剥离全部 EXIF（包括 GPS 位置信息）。
-  拍摄参数只显示机身、镜头、焦距、光圈、快门、ISO 和时间。
-- **没有 EXIF 的照片**（截图、聊天软件传的图）：正常展示，时间用文件时间
-  代替（页面上标 ※），参数处显示「参数缺失 / データなし」。
-- **删除照片**：直接从 `photos/` 删掉文件即可，网站会同步移除。
-- **目前 `photos/` 里是一批示例照片**，可以整批删掉换成你自己的作品。
+```bash
+export PATH="$PWD/.node/bin:$PATH"   # Node 在项目内 .node/，无需系统安装
+npm run dev      # 构建 + 本地预览 + 监听 photos/ 自动热重建
+npm run build    # 产出 dist/（纯静态、自包含）
+npm run report   # 额外生成颜色分类调参页
+```
 
-## 发布与更新（GitHub Pages 自动化）
+```
+photos/          照片源（root=自动归类，五色子目录=强制指定，submissions/=访客投稿）
+scripts/         构建管线（扫描→EXIF→归色→缩略图→页面生成，增量缓存）
+site/            前端源（样式、灯箱、瀑布流、首页动效、上传页交互）
+workers/         Cloudflare Worker（投稿接收）
+.github/         Actions 构建发布工作流
+```
 
-仓库推送到 main 分支后，GitHub Actions 会自动构建并发布到
-https://williamluo0212.github.io/japan-traval-memories/ 。
-日常更新照片：拖进 `photos/` → 本地预览满意后 `git add -A && git commit && git push`。
+技术要点：仅 3 个运行时依赖（sharp / exifr / heic-decode）；HEIC 解码 macOS 用
+`sips`、CI 用 wasm；输出文件名为内容 hash；`.cache/` 存昂贵产物，`dist/` 可随时整删重建。
 
-## 访客投稿
+## 更新日志
 
-网站有「投稿」页，访客上传的照片会变成一个 Pull Request 发到你邮箱：
-合并 = 通过并自动发布（照片带「投稿」标注混入五色页），关闭 = 拒绝。
-首次启用需按 `docs/投稿功能配置指南.md` 配置（约 15 分钟）。
+见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 技术备忘（给未来的维护者）
+---
 
-- Node.js 在项目内 `.node/` 目录（v24 LTS，无需系统安装）；依赖仅 sharp + exifr。
-- `npm run dev`：构建 + 本地服务器 + 监听 photos/ 自动重建刷新。
-- 昂贵产物（缩略图）缓存在 `.cache/`，`dist/` 可随时整删重建。
-- 颜色算法与全部阈值在 `scripts/lib/color.js` 顶部常量区。
-- HEIC 解码：macOS 本地用系统 `sips`（快），CI 的 Linux 上自动切换为
-  `heic-decode`（纯 wasm）；`FORCE_HEIC_WASM=1` 可本地模拟 CI 行为。
-- 投稿链路：`workers/upload-worker.js`（Cloudflare Worker，校验+开 PR）、
-  `photos/submissions/`（投稿照片，自动归类+「投稿」标注）、
-  `upload.config.json`（Worker 地址与 Turnstile Site Key）。
+设计语言：生成り色底・明朝体・縦書き・余白。五色取自日本传统色：
+茜 <sub>あかね</sub>・藍 <sub>あい</sub>・山吹 <sub>やまぶき</sub>・松葉 <sub>まつば</sub>・鼠 <sub>ねずみ</sub>。
+
+*Built with [Claude Code](https://claude.com/claude-code)*
