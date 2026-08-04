@@ -61,16 +61,16 @@ workers/         Cloudflare Worker（投稿接收）
 
 见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 开发预期
+
+- 网站主页面背景更新
+- 审核功能自动化
+- 上线英文版
+- 英文版ui适配
+
 ---
 
 设计语言：生成り色底・明朝体・縦書き・余白。五色取自日本传统色：
 茜 <sub>あかね</sub>・藍 <sub>あい</sub>・山吹 <sub>やまぶき</sub>・松葉 <sub>まつば</sub>・鼠 <sub>ねずみ</sub>。
 
 *Built with [Claude Code](https://claude.com/claude-code)*
-
-## 开发预期
-
-*网站主页面背景更新
-*审核功能自动化
-*上线英文版
-*英文版ui适配
