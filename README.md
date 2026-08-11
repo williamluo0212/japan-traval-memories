@@ -61,12 +61,13 @@ workers/         Cloudflare Worker（投稿接收）
 
 见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 开发预期
+## 更新预告
 
 - 网站主页面背景更新
 - 审核功能自动化
 - 上线英文版
 - 英文版ui适配
+- 8月11日入职了，摆了。。。无限期暂停更新
 
 ---
 
