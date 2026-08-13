@@ -13,6 +13,17 @@
   }
 
   let leaving = false;
+
+  // 复位：清除「展开中」的类与 leaving 锁。
+  // iOS Safari 从子页面退回首页时会从 bfcache 恢复页面，JS 状态（leaving=true、
+  // .opening/.is-opening 类）被原样冻结，导致回来后再点其他色带被 leaving 拦下。
+  function reset() {
+    leaving = false;
+    const s = document.querySelector('.stripes');
+    if (s) s.classList.remove('opening');
+    stripes.forEach((a) => a.classList.remove('is-opening'));
+  }
+
   stripes.forEach((a) => {
     a.addEventListener('click', (ev) => {
       if (!mobile.matches || reduced.matches) return; // 桌面端不拦截
@@ -25,5 +36,10 @@
         location.href = a.href;
       }, 640);
     });
+  });
+
+  // bfcache 恢复时复位（persisted=true 表示页面来自缓存而非首次加载）
+  window.addEventListener('pageshow', (ev) => {
+    if (ev.persisted) reset();
   });
 })();
