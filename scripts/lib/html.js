@@ -15,6 +15,15 @@ const esc = (s) =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
 
+// 6 位 hex → rgba() 字符串，用于首页色罩（替代 color-mix，兼容性更好）
+function hexToRgba(hex, alpha) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function exifLine(exif) {
   return [exif.camera, exif.lens, exif.focal, exif.fnumber, exif.exposure, exif.iso]
     .filter(Boolean)
@@ -69,13 +78,14 @@ export function renderHome(byColor) {
     const m = COLOR_META[c];
     const list = byColor[c] || [];
     const feat = featuredFor(c, list);
-    // background-image 必须写在行内样式：相对 URL 按页面地址解析（放进 CSS 变量的话，
-    // 各浏览器对解析基准的实现不一致，会 404）
-    const photoVars = feat
-      ? `;background-image:linear-gradient(color-mix(in srgb, ${m.hex} 45%, transparent), color-mix(in srgb, ${m.hex} 45%, transparent)),linear-gradient(rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.35)),url('img/thumb/${feat.hash}-t.jpg')`
+    // 照片背景改为 <img class="st-bg">：可 async 解码、object-fit 铺满；
+    // 色罩与底部暗渐变移到 CSS 伪元素（--wash 为该色的 45% 半透明罩）。
+    const photoImg = feat
+      ? `\n        <img class="st-bg" src="img/thumb/${feat.hash}-t.avif" alt="" decoding="async">`
       : '';
     const fg = feat ? '#F7F5F0' : m.fg;
-    return `      <a class="stripe${feat ? ' st-photo' : ''}" href="${c}/index.html" style="--sc:${m.hex};--fg:${fg}${photoVars}" title="${m.zh} / ${m.kana}">
+    const wash = hexToRgba(m.hex, 0.45);
+    return `      <a class="stripe${feat ? ' st-photo' : ''}" href="${c}/index.html" style="--sc:${m.hex};--fg:${fg};--wash:${wash}" title="${m.zh} / ${m.kana}">${photoImg}
         <span class="st-label"><span class="st-kanji">${m.kanji}</span><span class="st-kana" lang="ja">${m.kana}</span></span>
         <span class="st-count">${list.length}<span class="st-unit">枚</span></span>
       </a>`;
@@ -112,9 +122,9 @@ export function renderColorPage(color, entries) {
     const subBadge = e.submitted ? '<span class="cap-sub" title="来访者投稿 / ご投稿">投稿</span>' : '';
     return `      <figure class="ph">
         <a class="ph-link" href="#p=${e.hash}" data-id="${e.hash}" data-idx="${i}" data-sub="${e.submitted ? 1 : 0}"
-           data-large="${prefix}img/large/${e.hash}-l.jpg" data-w="${e.large.width}" data-h="${e.large.height}"
+           data-large="${prefix}img/large/${e.hash}-l.avif" data-w="${e.large.width}" data-h="${e.large.height}"
            data-exif="${esc(line)}" data-date="${esc(e.exif.takenAtText)}" data-timesource="${e.exif.timeSource}">
-          <img src="${prefix}img/thumb/${e.hash}-t.jpg" width="${e.thumb.width}" height="${e.thumb.height}"
+          <img src="${prefix}img/thumb/${e.hash}-t.avif" width="${e.thumb.width}" height="${e.thumb.height}"
                alt="${esc(e.exif.dateText)} 摄" loading="lazy"
                style="aspect-ratio:${e.thumb.width} / ${e.thumb.height};background:${e.avgColor}">
         </a>
@@ -208,7 +218,7 @@ export function renderReport(entries) {
       e.lowConfidence ? '<i class="flag warn">低置信度</i>' : '',
     ].join('');
     return `<div class="cell">
-      <img src="${prefix}img/thumb/${e.hash}-t.jpg" loading="lazy" style="background:${e.avgColor}">
+      <img src="${prefix}img/thumb/${e.hash}-t.avif" loading="lazy" style="background:${e.avgColor}">
       <p>最终 ${badge(e.finalColor)} ｜ 自动 ${badge(e.autoColor)} ${flags}</p>
       <p>中性 ${Math.round(e.neutralRatio * 100)}%</p>
       ${bars}

@@ -33,10 +33,15 @@ export async function build({ report = false, quiet = false } = {}) {
 
   const { photos, skippedRaw, ignored } = scanPhotos(PHOTOS);
 
-  let manifest = { version: 1, photos: {} };
+  // 输出格式变更（如 JPEG → AVIF）时递增此版本，使旧缓存整体失效重建
+  const CACHE_VERSION = 2;
+  let manifest = { version: CACHE_VERSION, photos: {} };
   try {
     manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
   } catch { /* 首次构建无缓存 */ }
+  if (manifest.version !== CACHE_VERSION) {
+    manifest = { version: CACHE_VERSION, photos: {} };
+  }
 
   // 增量判定：key = size + mtime，命中直接复用缓存条目
   const next = {};
@@ -100,7 +105,7 @@ export async function build({ report = false, quiet = false } = {}) {
   }
 
   // 孤儿清理：已删除照片的缓存图
-  const wanted = new Set(entries.flatMap((e) => [`${e.hash}-t.jpg`, `${e.hash}-l.jpg`]));
+  const wanted = new Set(entries.flatMap((e) => [`${e.hash}-t.avif`, `${e.hash}-l.avif`]));
   for (const f of fs.readdirSync(CACHE_IMG)) {
     if (!wanted.has(f)) fs.rmSync(path.join(CACHE_IMG, f), { force: true });
   }
@@ -117,8 +122,8 @@ export async function build({ report = false, quiet = false } = {}) {
       if (!fs.existsSync(dst)) fs.linkSync(path.join(CACHE_IMG, name), dst);
     }
   };
-  syncLinks('thumb', '-t.jpg');
-  syncLinks('large', '-l.jpg');
+  syncLinks('thumb', '-t.avif');
+  syncLinks('large', '-l.avif');
 
   // 前端资源 + 页面
   for (const f of fs.readdirSync(SITE)) {
@@ -144,7 +149,7 @@ export async function build({ report = false, quiet = false } = {}) {
     fs.writeFileSync(path.join(DIST, '_debug', 'colors.html'), renderReport(sorted));
   }
 
-  fs.writeFileSync(MANIFEST, JSON.stringify({ version: 1, photos: next }));
+  fs.writeFileSync(MANIFEST, JSON.stringify({ version: CACHE_VERSION, photos: next }));
 
   // 构建日志（写给摄影师看）
   const processed = toProcess.length - failures.length;

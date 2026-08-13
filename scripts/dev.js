@@ -23,6 +23,7 @@ const MIME = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.avif': 'image/avif',
   '.svg': 'image/svg+xml',
   '.json': 'application/json; charset=utf-8',
 };

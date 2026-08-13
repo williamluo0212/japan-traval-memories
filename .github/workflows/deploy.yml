@@ -29,12 +29,13 @@ jobs:
           node-version: 24
           cache: npm
 
-      # 缩略图缓存：照片没变时秒级复用，只有新照片才重新处理
+      # 缩略图缓存：照片没变时秒级复用，只有新照片才重新处理。
+      # 输出格式/管线变更时递增 key 里的版本号（v2 = JPEG 改为 AVIF）。
       - uses: actions/cache@v4
         with:
           path: .cache
-          key: photos-cache-${{ hashFiles('photos/**') }}
-          restore-keys: photos-cache-
+          key: photos-cache-v2-avif-${{ hashFiles('photos/**') }}
+          restore-keys: photos-cache-v2-avif-
 
       - run: npm ci
 

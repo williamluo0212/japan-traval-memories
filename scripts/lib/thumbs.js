@@ -1,5 +1,6 @@
 // 图片处理：内容 hash、缩略图/大图生成、HEIC 的 sips 桥接、并发池。
-// 输出一律 .rotate() 烘焙方向且不带 metadata —— EXIF/GPS 自动剥离。
+// 输出一律 .rotate() 烘焙方向、不带 metadata（EXIF/GPS 自动剥离），
+// 并编码为 AVIF（体积约为同质量 JPEG 的 60% 左右，现代浏览器全面支持）。
 
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -13,9 +14,9 @@ import { analyzeColor } from './color.js';
 const execFileP = promisify(execFile);
 
 const THUMB_WIDTH = 800;
-const THUMB_QUALITY = 78;
+const THUMB_QUALITY = 55;   // AVIF 质量（0–100），网格缩略图
 const LARGE_EDGE = 2048;
-const LARGE_QUALITY = 85;
+const LARGE_QUALITY = 60;   // AVIF 质量，灯箱大图
 
 // 流式内容 hash，前 10 位十六进制作为输出文件名（防同名冲突、缓存永久有效）
 export function fileHash(absPath) {
@@ -74,8 +75,8 @@ export async function processImage(absPath, cacheImgDir) {
     const hash = await fileHash(absPath); // hash 取原文件内容，与转换产物无关
     const base = sharp(input, inputOptions).rotate();
 
-    const thumbPath = path.join(cacheImgDir, `${hash}-t.jpg`);
-    const largePath = path.join(cacheImgDir, `${hash}-l.jpg`);
+    const thumbPath = path.join(cacheImgDir, `${hash}-t.avif`);
+    const largePath = path.join(cacheImgDir, `${hash}-l.avif`);
 
     let large;
     if (fs.existsSync(largePath)) {
@@ -84,7 +85,7 @@ export async function processImage(absPath, cacheImgDir) {
       const info = await base
         .clone()
         .resize({ width: LARGE_EDGE, height: LARGE_EDGE, fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: LARGE_QUALITY, mozjpeg: true })
+        .avif({ quality: LARGE_QUALITY })
         .toFile(largePath);
       large = { width: info.width, height: info.height };
     }
@@ -96,7 +97,7 @@ export async function processImage(absPath, cacheImgDir) {
       const info = await base
         .clone()
         .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-        .jpeg({ quality: THUMB_QUALITY, mozjpeg: true })
+        .avif({ quality: THUMB_QUALITY })
         .toFile(thumbPath);
       thumb = { width: info.width, height: info.height };
     }

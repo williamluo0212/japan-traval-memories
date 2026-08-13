@@ -141,6 +141,8 @@ body.page-home {
 }
 
 .stripe {
+  position: relative;
+  overflow: hidden;
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
@@ -152,13 +154,34 @@ body.page-home {
   transition: flex-grow 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), filter 0.4s;
 }
 
-/* 有照片时：主题色最鲜明的一张做背景（background-image 由构建时写入行内样式：
-   传统色薄罩 + 底部暗渐变 + 照片三层） */
+/* 有照片时：<img class="st-bg"> 铺底（async 解码、object-fit 覆盖），
+   ::before 覆传统色薄罩 + 底部暗渐变（--wash 由构建写入行内样式） */
+.st-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.stripe.st-photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(var(--wash), var(--wash)),
+    linear-gradient(rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.35));
+}
+
 .stripe.st-photo {
-  background-size: cover;
-  background-position: center;
   text-shadow: 0 1px 14px rgb(0 0 0 / 0.35);
 }
+
+.st-label,
+.st-count { position: relative; z-index: 2; }
 
 .stripe:hover { flex-grow: 1.28; filter: brightness(1.05); }
 

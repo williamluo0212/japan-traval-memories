@@ -2,6 +2,19 @@
 
 本项目的所有重要变更都记录在此。
 
+## v2.3 — 2026-08-14
+
+### 性能优化
+- 照片输出格式从 JPEG 改为 **AVIF**：体积约为同质量 JPEG 的 60%，全站加载更快
+  （尺寸/质量参数见 `scripts/lib/thumbs.js`；现代浏览器全面支持）
+- 首页五色分屏背景由 CSS `background-image` 改为 `<img>` + 覆盖层：
+  支持 `decoding="async"`、`object-fit` 铺满；色罩改用 `rgba()`（替代 `color-mix`，兼容性更好）
+- 构建缓存升级 v2：manifest 增加版本门 + CI 缓存 key 加 `v2-avif`，旧 JPEG 缓存自动失效重建
+
+### 维护
+- 移除本地残留的 `dist/` 内嵌 git 仓库（旧 gh-pages 推送方式遗留，约 1.6GB），
+  现由 GitHub Actions 从干净 checkout 构建发布，`dist/` 可随时整删重建
+
 ## v2.2 — 2026-07-23
 
 ### 移动端动效
