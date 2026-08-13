@@ -7,6 +7,9 @@ const SITE_TITLE = '五色';
 const SITE_KANA = 'ごしき';
 const SITE_SUB_ZH = '无尽夏';
 const SITE_SUB_JA = '終わらぬ夏';
+const SITE_URL = 'https://williamluo0212.github.io/japan-traval-memories';
+const SITE_NAME = '五色 ごしき — 无尽夏';
+const SITE_DESC = '按茜・藍・山吹・松葉・鼠五种日本传统色分页展示的日本旅拍摄影作品集，中日双语。';
 
 const esc = (s) =>
   String(s ?? '')
@@ -30,13 +33,34 @@ export function exifLine(exif) {
     .join(' · ');
 }
 
-function head(title, prefix) {
+// pagePath：页面相对站点根目录的路径（首页传 ''，颜色页传 'red/'，投稿页传 'upload/'）
+function head(title, prefix, pagePath = '') {
+  const url = `${SITE_URL}/${pagePath}`;
+  const image = `${SITE_URL}/assets/og-image.jpg`;
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F7F5F0">
 <title>${esc(title)}</title>
+<meta name="description" content="${esc(SITE_DESC)}">
+<link rel="canonical" href="${url}">
+<link rel="icon" href="${prefix}assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="${esc(SITE_NAME)}">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(SITE_DESC)}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="${image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(SITE_DESC)}">
+<meta name="twitter:image" content="${image}">
 <link rel="stylesheet" href="${prefix}assets/style.css">
 </head>`;
 }
@@ -136,7 +160,7 @@ export function renderColorPage(color, entries) {
     ? `<main class="grid">\n${figures}\n    </main>`
     : `<main class="grid grid-empty"><p class="empty">暂无照片<span lang="ja">まだ写真がありません</span></p></main>`;
 
-  return `${head(`${m.kanji} ${m.kana} · ${m.zh} — ${SITE_TITLE}`, prefix)}
+  return `${head(`${m.kanji} ${m.kana} · ${m.zh} — ${SITE_TITLE}`, prefix, `${color}/`)}
 <body class="page-color" data-color="${color}" style="--accent:${m.hex}">
   ${header(prefix, color)}
   <aside class="vertical-title" aria-hidden="true">
@@ -187,7 +211,7 @@ export function renderUpload(config) {
     <script src="${prefix}assets/upload.js" defer></script>`
     : `    <p class="empty">投稿受付准备中<span lang="ja">投稿受付は準備中です</span></p>`;
 
-  return `${head(`投稿 · ご投稿 — ${SITE_TITLE}`, prefix)}
+  return `${head(`投稿 · ご投稿 — ${SITE_TITLE}`, prefix, 'upload/')}
 <body class="page-upload">
   ${header(prefix, 'upload')}
   <main class="upload">

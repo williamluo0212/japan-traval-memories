@@ -2,6 +2,13 @@
 
 本项目的所有重要变更都记录在此。
 
+## v2.4 — 2026-08-14
+
+### SEO / 社交分享
+- 补齐 `<head>` 元信息：页面描述（description）、canonical、theme-color
+- 新增 Open Graph + Twitter Card 标签：分享到微信/微博/X 时显示标题、描述与预览图
+- 新增 favicon（五色竖条 SVG）、iOS 图标（apple-touch-icon）、分享预览图（og-image 1200×630）
+
 ## v2.3 — 2026-08-14
 
 ### 性能优化
